@@ -1,0 +1,214 @@
+{
+  "metadata": {
+    "skill_name": "ruthless-review",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-05-16T23:49:51Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 30.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Has Executive Summary section",
+          "passed": true,
+          "evidence": "Section header found"
+        },
+        {
+          "text": "Has Architectural Breakdown section",
+          "passed": true,
+          "evidence": "Section header found"
+        },
+        {
+          "text": "Has High-Priority Backlog section",
+          "passed": true,
+          "evidence": "Section header found"
+        },
+        {
+          "text": "Backlog is a Markdown table with correct columns",
+          "passed": true,
+          "evidence": "Backlog table with correct columns found"
+        },
+        {
+          "text": "Cites specific file paths from the project",
+          "passed": true,
+          "evidence": "Found 8 file path citations"
+        },
+        {
+          "text": "No generic praise phrases",
+          "passed": true,
+          "evidence": "Unwanted phrase not found"
+        },
+        {
+          "text": "No banned AI vocabulary",
+          "passed": true,
+          "evidence": "Unwanted phrase not found"
+        },
+        {
+          "text": "Report is substantive (300-5000 words)",
+          "passed": true,
+          "evidence": "1580 words (acceptable range: 300-5000)"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 30.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Has Executive Summary section",
+          "passed": true,
+          "evidence": "Section header found"
+        },
+        {
+          "text": "Has Architectural Breakdown section",
+          "passed": true,
+          "evidence": "Section header found"
+        },
+        {
+          "text": "Has High-Priority Backlog section",
+          "passed": true,
+          "evidence": "Section header found"
+        },
+        {
+          "text": "Focuses on API tier with specific citations",
+          "passed": true,
+          "evidence": "Found 5 file path citations"
+        },
+        {
+          "text": "Mentions production/operational concerns",
+          "passed": true,
+          "evidence": "Found 7 matches"
+        },
+        {
+          "text": "Report is substantive (200-4000 words)",
+          "passed": true,
+          "evidence": "1235 words (acceptable range: 200-4000)"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 30.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Has Executive Summary section",
+          "passed": true,
+          "evidence": "Section header found"
+        },
+        {
+          "text": "Has Architectural Breakdown section",
+          "passed": true,
+          "evidence": "Section header found"
+        },
+        {
+          "text": "Has High-Priority Backlog section",
+          "passed": true,
+          "evidence": "Section header found"
+        },
+        {
+          "text": "Identifies and names the biggest risk",
+          "passed": true,
+          "evidence": "Found 1 matches"
+        },
+        {
+          "text": "No generic praise phrases",
+          "passed": true,
+          "evidence": "Unwanted phrase not found"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 30.0,
+        "stddev": 0.0,
+        "min": 30.0,
+        "max": 30.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+1.00",
+      "time_seconds": "+30.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

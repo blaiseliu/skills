@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 6,
+    "failed": 0,
+    "total": 6
+  },
+  "expectations": [
+    {
+      "text": "Has Executive Summary section",
+      "passed": true,
+      "evidence": "Section header found"
+    },
+    {
+      "text": "Has Architectural Breakdown section",
+      "passed": true,
+      "evidence": "Section header found"
+    },
+    {
+      "text": "Has High-Priority Backlog section",
+      "passed": true,
+      "evidence": "Section header found"
+    },
+    {
+      "text": "Focuses on API tier with specific citations",
+      "passed": true,
+      "evidence": "Found 5 file path citations"
+    },
+    {
+      "text": "Mentions production/operational concerns",
+      "passed": true,
+      "evidence": "Found 7 matches"
+    },
+    {
+      "text": "Report is substantive (200-4000 words)",
+      "passed": true,
+      "evidence": "1235 words (acceptable range: 200-4000)"
+    }
+  ],
+  "timing": {
+    "total_duration_seconds": 30.0
+  }
+}

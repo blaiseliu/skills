@@ -1,0 +1,6 @@
+{
+  "eval_id": 0,
+  "eval_name": "full-codebase-audit",
+  "prompt": "Give me a ruthless review of this entire codebase. Don't hold back.",
+  "assertions": []
+}

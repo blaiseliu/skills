@@ -1,0 +1,38 @@
+{
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 5,
+    "failed": 0,
+    "total": 5
+  },
+  "expectations": [
+    {
+      "text": "Has Executive Summary section",
+      "passed": true,
+      "evidence": "Section header found"
+    },
+    {
+      "text": "Has Architectural Breakdown section",
+      "passed": true,
+      "evidence": "Section header found"
+    },
+    {
+      "text": "Has High-Priority Backlog section",
+      "passed": true,
+      "evidence": "Section header found"
+    },
+    {
+      "text": "Identifies and names the biggest risk",
+      "passed": true,
+      "evidence": "Found 1 matches"
+    },
+    {
+      "text": "No generic praise phrases",
+      "passed": true,
+      "evidence": "Unwanted phrase not found"
+    }
+  ],
+  "timing": {
+    "total_duration_seconds": 30.0
+  }
+}

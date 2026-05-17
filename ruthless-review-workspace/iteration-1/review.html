@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "ruthless-review", "runs": [{"id": "eval-0-full-audit-with_skill", "prompt": "Give me a ruthless review of this entire codebase. Don't hold back.", "eval_id": 0, "outputs": [{"name": "review-report.md", "type": "text", "content": "# Ruthless Review: Lectio Divina API\n\n## 1. Executive Summary (CEO Lens)\n\nThe single biggest systemic risk in this codebase is zero transient fault handling across four separate layers \u2014 API functions, service layer, repository layer, and SDK client. Every outbound HTTP call and every database connection is a single point of failure. A 200ms network blip or a PostgreSQL connection timeout will produce a user-facing 500, not a retry. In a serverless architecture where cold starts and connection churn are normal, this isn't a theoretical concern \u2014 it's a production incident waiting for the wrong millisecond.\n\nThe hidden cost is contract sprawl. The same verse response type exists in four separate locations (Core DTOs, Client DTOs, SDK DTOs, and TypeScript interfaces), each with slightly different property names and type conventions. Every API change requires manual synchronization across all four locations. The React app (`lectio-memorize`) and Blazor app (`LectioDivina.Client`) share no code and use completely separate auth systems \u2014 Supabase for React, Entra External ID for Blazor. You are paying the maintenance cost of two applications while getting the feature velocity of one.\n\nVerdict: This codebase is not healthy enough to scale without a dedicated stabilization investment. The architecture is conceptually sound \u2014 Clean Architecture with proper layer separation, well-structured functions, reasonable DI wiring. But the operational gaps (retry, observability, contract management) will compound every time a new feature or a new client SDK is added. I'd estimate 2-3 weeks of focused resilience and contract consolidation work before adding significant new capabilities.\n\n---\n\n## 2. Architectural Breakdown (Tech Lead Lens)\n\n### Pillar 1: Macro Architecture & Contracts\n\n**Finding: DTO quadruplication across tiers (CRITICAL)**\n\n`src/LectioDivina.Core/.../SingleVerseRequest.cs` (class with `{ get; set; }`)\n`src/LectioDivina.Client/Models/Requests/SingleVerseRequest.cs` (record with `[property: Required]`)\n`sdk/dotnet/.../LectioDivinaClient.cs:VerseInfo` (class, different naming \u2014 `TranslationDetails` vs `TranslationInfo`)\n`lectio-memorize/src/types/index.ts:VerseInfo` (TypeScript interface, different shape with `id: number` vs `Code: string`)\n\nFour independent representations of the same API contract. The naming differences are especially dangerous \u2014 what the Core calls `TranslationInfo`, the SDK calls `TranslationDetails`, and the Core also uses `TranslationText` in the parallel response. A developer updating the copyright field has to find and change it in four places, and the only way to catch a miss is a runtime deserialization failure.\n\n**Finding: CLAUDE.md explicitly documents the duplication but doesn't flag it as debt**\n\nFrom `CLAUDE.md` line: \"When updating API contracts, update both sets of DTOs.\" This tells developers to do manual synchronization. The correct solution is a single source of truth with generated clients.\n\n### Pillar 2: Backend / API Tier\n\n**Finding: `BuildServiceProvider()` inside `ConfigureServices` creates a second DI container (CRITICAL)**\n\n`src/LectioDivina.Api/Program.cs:44-46`:\n```csharp\nservices.AddSingleton(new DatabaseConfiguration(\n    connectionString,\n    services.BuildServiceProvider().GetRequiredService<ILogger<DatabaseConfiguration>>()\n));\n```\nThis call to `BuildServiceProvider()` builds an entire second dependency injection container just to resolve one `ILogger`. In .NET, this is a documented anti-pattern that:\n- Creates duplicate singleton instances (two `ILogger<DatabaseConfiguration>` instances exist)\n- Causes validation errors in modern .NET versions (the container warns about this)\n- Makes `DatabaseConfiguration` a captive dependency \u2014 it's registered as Singleton but was resolved from a temporary container that gets disposed\n\nThe fix is straightforward \u2014 use the factory overload:\n```csharp\nservices.AddSingleton(sp => new DatabaseConfiguration(\n    connectionString,\n    sp.GetRequiredService<ILogger<DatabaseConfiguration>>()\n));\n```\n\n**Finding: Repositories log and rethrow \u2014 adding noise, not resilience (HIGH)**\n\n`src/LectioDivina.Data/.../VerseRepository.cs:42-47` (repeated in every method):\n```csharp\ncatch (Exception ex)\n{\n    _logger.LogError(ex, \"Error getting verse ...\");\n    throw;\n}\n```\nThis pattern adds zero resilience \u2014 the exception is logged at the repository level, then logged again at the function level (`SingleVerseFunction.cs:67`), then returned as a generic 500. Two log entries for one failure, no retry logic. If you add retry (e.g., Polly), it belongs in the repository where you can distinguish between transient Postgres errors (deadlocks, connection timeouts \u2014 retryable) and permanent errors (bad SQL, constraint violations \u2014 don't retry).\n\n**Finding: `new HttpClient()` per serverless invocation (HIGH)**\n\n`lectio-memorize/functions/GetVerse.cs:23` and `GetBooks.cs:19`:\n```csharp\nvar client = new LectioDivinaClient(baseUrl, apiKey);\n```\n`LectioDivinaClient` internally creates `new HttpClient { BaseAddress = ... }`. In a serverless function, each invocation creates a new HttpClient \u2014 which creates a new socket \u2014 which isn't immediately released when the function completes because of TCP `TIME_WAIT`. Under any load beyond trivial, this exhausts the available ephemeral ports. The fix is `IHttpClientFactory` with the `AddHttpClient<T>()` pattern (already used correctly in the Blazor client's `Program.cs` for the Refit client and Entra auth).\n\nThe `Program.cs` of `lectio-memorize/functions/` has an empty `ConfigureServices` block:\n```csharp\n.ConfigureServices(services =>\n{\n    // No DB needed \u2014 just proxies to the Lectio Divina API\n})\n```\nThis is where the `IHttpClientFactory` registration should go. The `LectioDivinaClient` already has a constructor that accepts `HttpClient` \u2014 but nothing uses it.\n\n**Finding: N+1 fallback queries \u2014 either dead code or a mapping bug (MEDIUM)**\n\n`src/LectioDivina.Services/.../VerseService.cs:42-43`:\n```csharp\nvar book = verse.Book ?? await _bookRepository.GetByIdAsync((short)request.Book);\nvar version = verse.Version ?? await _versionRepository.GetByCodeAsync(request.Version);\n```\nThe repository's SQL JOINs both `books` and `versions` with `splitOn: \"Id,Id\"`. If the Dapper multi-mapping is correct, `verse.Book` and `verse.Version` should never be null \u2014 making these fallback queries dead code. If they are null (because multi-mapping fails on certain result shapes), that's a real bug being masked by the fallback rather than fixed. Either way, this should be resolved definitively: either remove the dead code or fix the mapping.\n\n### Pillar 3: Frontend Tier(s)\n\n**Finding: Raw fetch with no resilience in React (HIGH)**\n\n`lectio-memorize/src/lib/api.ts:5-10`:\n```typescript\nasync function get<T>(path: string): Promise<T> {\n  const res = await fetch(`${API_BASE}/api${path}`);\n  if (!res.ok) throw new Error(`API error: ${res.status}`);\n  const json = await res.json();\n  return json.data;\n}\n```\nNo timeout, no retry, no request deduplication. If a user navigates to a page that calls `fetchVerse()` three times in rapid succession (common in a memorization UI loading a stack), all three calls hit the wire independently. A single network hiccup becomes a broken UI. Compare this to the Blazor client's `ApiErrorHandler` at `src/LectioDivina.Client/Services/ApiErrorHandler.cs`, which provides centralized error handling with user-facing snackbar messages.\n\n**Finding: Fake VerseRangeResponse adapter hack (MEDIUM)**\n\n`src/LectioDivina.Client/Pages/SingleVerse.razor.cs:114-120`:\n```csharp\nvar fakeRange = new VerseRangeResponse(\n    _response.Reference, _response.Translation,\n    [new VerseResponseItem((short)_selectedBookId, _selectedChapter, _selectedVerse, _response.Text)],\n    _response.Copyright);\nreturn VerseFormatter.Format(fakeRange, ...);\n```\nA single verse is wrapped into a `VerseRangeResponse` with a one-element list just to call `IVerseFormatter.Format()`. The formatter interface has no method for formatting a single verse. This is a design flaw in the formatting abstraction \u2014 it conflates \"format verse data\" with \"format a range.\" The formatter should accept a common input type, or have a single-verse overload.\n\n### Pillar 4: Operational Resilience & Economics\n\n**Finding: No correlation IDs or structured observability (HIGH)**\n\nThere is no trace ID propagating from frontend to backend. The Blazor client's Refit calls go through `CookieCredentialsHandler`, `TokenAuthorizationHandler`, and `ApiErrorHandler` \u2014 none add a correlation ID header. The API functions log with structured parameters (good) but don't extract or propagate a request ID. The `ResponseEnvelopeHelper` wraps responses in `{ data, meta: { request_id } }` but the `request_id` appears to be auto-generated per response, not traced through the call chain.\n\nWhen a user reports \"I got an error on the verse lookup page at 2:14 PM,\" there is no way to find the corresponding server log entry without guessing based on timestamp proximity.\n\n**Finding: API key in query string (LOW)**\n\n`sdk/dotnet/.../LectioDivinaClient.cs:97`:\n```csharp\nvar url = $\"{path}?code={_apiKey}\";\n```\nThe SDK appends the API key as a query parameter. This means the key appears in:\n- Server access logs\n- Any proxy logs between client and server\n- Browser network tabs (if used from a browser)\n- Potentially in `Referer` headers\n\nThe middleware at `src/LectioDivina.Api/Middleware/ApiKeyMiddleware.cs` already supports Bearer token authentication (`Authorization: Bearer sk_live_...`), which doesn't have this problem. The SDK just needs to use it instead of the `?code=` approach.\n\n---\n\n## 3. High-Priority Backlog\n\n| # | Task | Category | Impact | Complexity | Justification |\n|---|------|----------|--------|------------|---------------|\n| 1 | Add retry/circuit-breaker to all outbound calls | Resilience | High | Medium | 14 unguarded outbound calls across 4 layers; one network blip causes user-facing 500 |\n| 2 | Replace `BuildServiceProvider()` with factory lambda | Architecture | High | Low | Second DI container is a known anti-pattern; 2-line fix prevents duplicate singletons |\n| 3 | Consolidate DTOs to single source of truth with client generation | Architecture | High | High | 4 copies of same types; every API change risks silent deserialization failures |\n| 4 | Add `IHttpClientFactory` to lectio-memorize functions | Resilience | High | Low | `new HttpClient()` per invocation will exhaust ports under load |\n| 5 | Add correlation ID propagation (frontend \u2192 API \u2192 DB) | Observability | High | Medium | Currently impossible to trace a user-reported error to a server log |\n| 6 | Add timeout and retry to React fetch layer | Resilience | Medium | Low | Raw fetch with no retry; any network blip breaks the memorization UI |\n| 7 | Resolve N+1 fallback queries \u2014 remove or fix mapping | Backend | Medium | Low | Either dead code inflating every request by 2 optional queries, or a Dapper mapping bug |\n| 8 | Consolidate auth to one system (Supabase or Entra, not both) | Architecture | Medium | High | Two parallel auth systems double the attack surface and maintenance burden |\n| 9 | Add single-verse overload to IVerseFormatter | Frontend | Low | Low | Eliminates the hack of wrapping a single verse in a VerseRangeResponse |\n| 10 | Switch SDK to Bearer token auth instead of query string | Security | Low | Low | API key in query string is visible in logs and proxy traces; Bearer already supported |\n"}], "grading": null}, {"id": "eval-0-full-audit-without_skill", "prompt": "Give me a ruthless review of this entire codebase. Don't hold back.", "eval_id": 0, "outputs": [], "grading": null}, {"id": "eval-1-api-tier-scoped-with_skill", "prompt": "Audit just the API tier. I want to know what will break in production.", "eval_id": 1, "outputs": [{"name": "review-report.md", "type": "text", "content": "# Ruthless Review: API Tier (LectioDivina.Api + Services + Data)\n\n## 1. Executive Summary (CEO Lens)\n\nThe API tier's biggest risk in production is the complete absence of transient fault handling from the repository layer outward. Every database call, every outbound HTTP call through `NativeAuthClient`, and every health check hits the wire with no retry, no circuit breaker, no timeout configuration. In Azure Functions' consumption plan where cold starts are normal and connection pools are ephemeral, a single PostgreSQL connection timeout or a 500ms network hiccup to the identity provider will produce a user-facing error \u2014 not a retry that succeeds 200ms later. This isn't speculative. This is table stakes for any serverless API that touches a database.\n\nThe hidden cost is in the DI configuration. `Program.cs` calls `BuildServiceProvider()` inside `ConfigureServices`, which creates a second dependency injection container \u2014 a documented .NET anti-pattern that produces duplicate singleton instances and will generate analyzer warnings in .NET 8+. The `ReferenceCache` takes `IServiceProvider` as a dependency (service locator pattern) to work around the fact that it's a Singleton consuming Scoped services. Both of these are solvable with standard patterns, but left as-is they cause subtle bugs \u2014 like the two `ILogger<DatabaseConfiguration>` instances that currently exist, one of which is never disposed.\n\nThe API tier is architecturally clean \u2014 middleware pipeline is well-ordered, functions are consistently structured, and the v1/v2 API versioning is handled correctly. But the operational gaps (resilience, observability, DI hygiene) make it fragile under load. A well-timed PostgreSQL failover or a surge of cold starts will expose every gap simultaneously.\n\n---\n\n## 2. Architectural Breakdown (Tech Lead Lens)\n\n### Composition Root Analysis\n\n**Finding: `BuildServiceProvider()` anti-pattern (CRITICAL)**\n\n`src/LectioDivina.Api/Program.cs:44-46`:\n```csharp\nservices.AddSingleton(new DatabaseConfiguration(\n    connectionString,\n    services.BuildServiceProvider().GetRequiredService<ILogger<DatabaseConfiguration>>()\n));\n```\nThis builds a second DI container solely to resolve an `ILogger<T>`. The consequences:\n- Two `ILogger<DatabaseConfiguration>` instances exist \u2014 one from the temp container, one from the real one\n- The temp container is never disposed\n- Validation errors in modern .NET (the host warns about this pattern)\n\nThe factory overload is a one-line fix:\n```csharp\nservices.AddSingleton(sp => new DatabaseConfiguration(\n    connectionString, sp.GetRequiredService<ILogger<DatabaseConfiguration>>()));\n```\n\n**Finding: Service locator in ReferenceCache (MEDIUM)**\n\n`src/LectioDivina.Api/Caching/ReferenceCache.cs:11`:\n```csharp\npublic ReferenceCache(IServiceProvider serviceProvider, ...)\n```\nThen in `InitializeAsync()`:\n```csharp\nusing var scope = _serviceProvider.CreateScope();\nvar bookRepo = scope.ServiceProvider.GetRequiredService<IBookRepository>();\n```\n`ReferenceCache` is registered as Singleton but needs Scoped repositories. The service locator pattern (`IServiceProvider` injection) works but hides the dependency graph \u2014 you can't tell from the constructor what this class actually needs. The standard solution is to register `ReferenceCache` as a hosted service (`IHostedService`) or to accept factory delegates (`Func<IBookRepository>`) instead of the container itself.\n\n**Finding: Empty catch in UpdateLastUsedFireAndForget (LOW)**\n\n`src/LectioDivina.Api/Middleware/ApiKeyMiddleware.cs:81`:\n```csharp\nprivate async Task UpdateLastUsedFireAndForget(Guid keyId)\n{\n    try { await _apiKeyRepo.UpdateLastUsedAsync(keyId); } catch { /* best effort */ }\n}\n```\nThis is a legitimate fire-and-forget pattern (the method is called without `await` at call sites), but the empty catch will swallow transient database errors silently. If the database is intermittently unavailable, last-used timestamps will silently fall out of date with no alerting. At minimum, log a warning-level message.\n\n### Repository Layer\n\n**Finding: Log-and-rethrow is noise, not resilience (HIGH)**\n\n`src/LectioDivina.Data/.../VerseRepository.cs:42-47` (repeated in every method):\n```csharp\ncatch (Exception ex)\n{\n    _logger.LogError(ex, \"Error getting verse {VersionCode} {BookId} {Chapter}:{Verse}\", ...);\n    throw;\n}\n```\nThree problems:\n1. Zero retry logic. PostgreSQL transient errors (deadlocks, connection timeouts) are just rethrown as 500s.\n2. The same exception is logged here AND in the function layer (`SingleVerseFunction.cs:67` catches and logs again). Two log entries for one failure.\n3. The exception is logged before any retry is attempted \u2014 so if you add retry later, you'll get error logs for requests that eventually succeed.\n\nThe correct layering: repository catches Npgsql transient exceptions (08XXX class, 40001 deadlock, 57P03 cannot connect), retries with exponential backoff, and only logs if all retries fail. Permanent errors (23505 unique violation, etc.) should not be retried and should not be swallowed.\n\n**Finding: Connection opened in factory method, not in using block (MEDIUM)**\n\n`src/LectioDivina.Data/.../DatabaseConfiguration.cs:22`:\n```csharp\npublic virtual NpgsqlConnection CreateConnection()\n{\n    var connection = new NpgsqlConnection(_connectionString);\n    connection.Open();\n    return connection;\n}\n```\nThe connection is opened before returning from the factory. The caller then does:\n```csharp\nusing var connection = _dbConfig.CreateConnection();\n// ... Dapper query ...\n```\nThis means the connection is opened in `CreateConnection()` and disposed by `using`. It works, but the `Open()` call itself has no retry or timeout \u2014 if the database is momentarily unavailable, the exception surfaces to the caller immediately. Dapper can open connections lazily; you can let it handle the open inside the query execution where retry logic can wrap the entire operation.\n\n### Request Pipeline\n\n**Finding: Two different error response formats (MEDIUM)**\n\nThe v1 functions use `ResponseEnvelopeHelper.WrapError()` which returns:\n```json\n{ \"data\": null, \"meta\": { \"request_id\": \"...\" }, \"error\": { \"code\": \"...\", \"message\": \"...\" } }\n```\nThe v2 functions (`SingleVerseFunction.cs`) return raw strings:\n```\n\"Invalid request body\"\n```\nThe Blazor client's `IApiService` (Refit) expects deserializable response types. A Refit client hitting a v2 endpoint that returns a raw string on error will get a deserialization exception instead of the actual error message. The `ApiErrorHandler` catches this and shows the raw HTTP status, but the structured error detail is lost.\n\n### DI Scope Analysis\n\n**Finding: Singleton holding Scoped dependency \u2014 handled correctly (GOOD)**\n\n`ReferenceCache` is Singleton but needs `IBookRepository` (Scoped). The code handles this correctly by creating a scope at initialization time:\n```csharp\nusing var scope = _serviceProvider.CreateScope();\n```\nThis is the correct pattern. The service locator approach is questionable but the scope management is correct.\n\n**Finding: HttpClient registration is correct (GOOD)**\n\n`Program.cs` registers `services.AddHttpClient(\"EntraAuth\")` \u2014 using the `IHttpClientFactory` pattern which handles socket lifetime. This is the correct pattern for serverless. The `NativeAuthClient` uses this named client. Contrast with the `lectio-memorize/functions/` which uses `new HttpClient()` directly.\n\n### Middleware Pipeline\n\nThe middleware ordering is correct: `ApiKeyMiddleware` \u2192 `JwtValidationMiddleware` \u2192 `RateLimitingMiddleware` \u2192 `CorsMiddleware`. The `ApiKeyMiddleware` correctly scopes its enforcement to v1 data routes only, passing through JWT-authenticated routes. The `RateLimitingMiddleware` correctly partitions by user `sub` claim with an \"anonymous\" fallback. Both are well-structured.\n\nOne concern: the `RateLimitingMiddleware` creates a `PartitionedRateLimiter` in its constructor and never disposes it. `PartitionedRateLimiter` implements `IDisposable` \u2014 in a long-running process this is a resource leak, though in Azure Functions' ephemeral execution model the impact is minimal.\n\n---\n\n## 3. High-Priority Backlog\n\n| # | Task | Category | Impact | Complexity | Justification |\n|---|------|----------|--------|------------|---------------|\n| 1 | Add retry/circuit-breaker to repository layer (Npgsql transient errors) | Resilience | High | Medium | No retry on any DB call; a 200ms blip becomes a user-facing 500 |\n| 2 | Replace `BuildServiceProvider()` with factory lambda in Program.cs | DI Hygiene | High | Low | Second DI container is a documented anti-pattern; 2-line fix |\n| 3 | Unify error response format across v1 and v2 endpoints | API Design | Medium | Medium | v2 returns raw strings, v1 returns structured envelopes; Refit clients break on v2 errors |\n| 4 | Add retry/timeout to `NativeAuthClient` outbound calls | Resilience | Medium | Medium | Auth flow has 3 sequential HTTP calls with no retry on any of them |\n| 5 | Log warning in `UpdateLastUsedFireAndForget` empty catch | Observability | Low | Low | Silently dropping DB errors means last-used timestamps can be stale with no alert |\n| 6 | Dispose `PartitionedRateLimiter` when middleware is disposed | Resource | Low | Low | Rate limiter implements IDisposable but is never disposed |\n"}], "grading": null}, {"id": "eval-1-api-tier-scoped-without_skill", "prompt": "Audit just the API tier. I want to know what will break in production.", "eval_id": 1, "outputs": [], "grading": null}, {"id": "eval-2-trigger-health-check-with_skill", "prompt": "System health check \u2014 what's the biggest risk in this architecture?", "eval_id": 2, "outputs": [{"name": "review-report.md", "type": "text", "content": "# Ruthless Review: System Health Check \u2014 Lectio Divina API\n\n## 1. Executive Summary (CEO Lens)\n\nThe single biggest risk in this architecture is the absence of transient fault handling at every layer. The API has 14+ outbound calls (PostgreSQL queries, Entra identity provider HTTP calls, SDK proxy calls) and not one of them has a retry policy, circuit breaker, or configurable timeout. In a serverless architecture where cold starts are normal and the underlying infrastructure is constantly cycling, this means every deployment, every scale-out event, and every network hiccup will produce user-facing 500 errors. A single PostgreSQL connection timeout or a 200ms identity provider blip during the auth flow is indistinguishable from a critical outage to the end user.\n\nThe second risk \u2014 quieter but more expensive over time \u2014 is contract fragmentation. The same API response types are maintained in four separate code locations with slightly different shapes and naming conventions. The Blazor client, the .NET SDK, the TypeScript types, and the Core DTOs all define their own versions of `VerseResponse`, `TranslationInfo`, and `BookInfo`. A field added to the API response must be manually synchronized across all four, and the only way to catch a miss is a runtime deserialization failure. If you plan to add another client SDK (Python, Swift), each new SDK multiplies this maintenance cost.\n\nThe third risk is the two-function-app split. The main API (`LectioDivina.Api`) and the React proxy layer (`lectio-memorize/functions`) are deployed as separate Azure Function Apps that share no code, no configuration, and no deployment pipeline. The proxy layer creates `new HttpClient()` per invocation \u2014 a known serverless anti-pattern that exhausts ephemeral ports under load. When the main API's health check endpoint changes, the proxy layer's health assumptions become stale with no automated detection.\n\nThese three risks interact: a cold start triggers the port exhaustion bug, which triggers the missing retry logic, which produces an error the user can't diagnose because there are no correlation IDs.\n\n---\n\n## 2. Architectural Breakdown (Tech Lead Lens)\n\n### Risk 1: Zero Transient Fault Handling (Critical)\n\nThe call chain for a single verse lookup crosses four layers, none of which retry:\n\n| Layer | File | Transient handling |\n|-------|------|--------------------|\n| Function | `SingleVerseFunction.cs:16` | Catches `Exception`, returns 500. No retry. |\n| Service | `VerseService.cs:21` | No try/catch at all \u2014 lets exceptions propagate |\n| Repository | `VerseRepository.cs:42` | Catches, logs, rethrows. No retry. |\n| Connection | `DatabaseConfiguration.cs:22` | `connection.Open()` with no retry, no timeout |\n\nThe same pattern exists in the auth flow: `AuthFunction.cs` makes 3 sequential calls to the identity provider (`InitiateAsync`, `ChallengeOobAsync`, `TokenWithOtpAsync`) \u2014 if any one fails, the user gets an error page and starts over. The `ApiErrorHandler` in the Blazor client shows a snackbar with the raw error message; there is no retry button, no exponential backoff, no graceful degradation.\n\n**What would fix it:** Polly retry policies at the repository layer (for Npgsql transient exceptions: class 08XXX, 40001, 57P03) and at the `NativeAuthClient` layer (for HTTP 5xx and `HttpRequestException`). Three retries with exponential backoff (100ms, 200ms, 400ms) is usually sufficient for cloud database transient failures.\n\n### Risk 2: Contract Fragmentation (High)\n\nThe `VerseResponse` concept exists in four places:\n\n| Location | Type | Naming |\n|----------|------|--------|\n| `Core/.../SingleVerseResponse.cs` | `class` | `TranslationInfo` (nested), `Text`, `Copyright` |\n| `Client/Models/.../SingleVerseResponse.cs` | `record` | `TranslationInfo` (separate record), `Text`, `Copyright` |\n| `sdk/dotnet/.../VerseInfo.cs` | `class` | `TranslationDetails` (different name!), `Text`, `Copyright` |\n| `lectio-memorize/.../types/index.ts` | TS interface | `VerseInfo` with `id: number` (different shape!) |\n\nThe SDK names the translation sub-object `TranslationDetails` while the Core and Client call it `TranslationInfo`. The TypeScript types use `id: number` while the .NET types use `Code: string` for version identification. These are silent deserialization failures waiting to happen \u2014 they won't produce compile errors, only runtime `null` fields or missing data.\n\n### Risk 3: Proxy Layer Socket Exhaustion (High)\n\n`lectio-memorize/functions/GetVerse.cs:23`:\n```csharp\nvar client = new LectioDivinaClient(baseUrl, apiKey);\n```\nThe `LectioDivinaClient` creates `new HttpClient { BaseAddress = ... }` internally. In Azure Functions:\n- Each invocation creates a new `HttpClient`\n- Each `HttpClient` creates a new socket\n- The socket enters `TIME_WAIT` for 30-120 seconds after disposal\n- Under concurrent load (even 10 req/s), ephemeral ports are exhausted within minutes\n\nThe main API's `Program.cs` uses the correct pattern (`services.AddHttpClient(\"EntraAuth\")`) \u2014 but the proxy layer's `Program.cs` has an empty `ConfigureServices` block. The fix is to register a typed client there.\n\n---\n\n## 3. High-Priority Backlog\n\n| # | Task | Category | Impact | Complexity | Justification |\n|---|------|----------|--------|------------|---------------|\n| 1 | Add Polly retry policies to all repository methods | Resilience | High | Medium | Zero retry on any DB call across the entire codebase |\n| 2 | Consolidate API contracts to single source of truth | Architecture | High | High | 4 copies of same types; field rename silently breaks 3 clients |\n| 3 | Add `IHttpClientFactory` to lectio-memorize functions | Resilience | High | Low | `new HttpClient()` per invocation exhausts ports under load |\n| 4 | Add retry to NativeAuthClient outbound HTTP calls | Resilience | Medium | Medium | 3-step auth flow fails entirely on any single network blip |\n| 5 | Add correlation ID propagation end-to-end | Observability | Medium | Medium | Can't trace a user error to a server log entry today |\n| 6 | Replace `BuildServiceProvider()` anti-pattern | DI Hygiene | Medium | Low | Second DI container is a documented anti-pattern |\n"}], "grading": null}, {"id": "eval-2-trigger-health-check-without_skill", "prompt": "System health check \u2014 what's the biggest risk in this architecture?", "eval_id": 2, "outputs": [], "grading": null}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "ruthless-review", "skill_path": "<path/to/skill>", "executor_model": "<model-name>", "analyzer_model": "<model-name>", "timestamp": "2026-05-16T23:49:51Z", "evals_run": [0, 1, 2], "runs_per_configuration": 3}, "runs": [{"eval_id": 0, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 8, "failed": 0, "total": 8, "time_seconds": 30.0, "tokens": 0, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "Has Executive Summary section", "passed": true, "evidence": "Section header found"}, {"text": "Has Architectural Breakdown section", "passed": true, "evidence": "Section header found"}, {"text": "Has High-Priority Backlog section", "passed": true, "evidence": "Section header found"}, {"text": "Backlog is a Markdown table with correct columns", "passed": true, "evidence": "Backlog table with correct columns found"}, {"text": "Cites specific file paths from the project", "passed": true, "evidence": "Found 8 file path citations"}, {"text": "No generic praise phrases", "passed": true, "evidence": "Unwanted phrase not found"}, {"text": "No banned AI vocabulary", "passed": true, "evidence": "Unwanted phrase not found"}, {"text": "Report is substantive (300-5000 words)", "passed": true, "evidence": "1580 words (acceptable range: 300-5000)"}], "notes": []}, {"eval_id": 1, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 6, "failed": 0, "total": 6, "time_seconds": 30.0, "tokens": 0, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "Has Executive Summary section", "passed": true, "evidence": "Section header found"}, {"text": "Has Architectural Breakdown section", "passed": true, "evidence": "Section header found"}, {"text": "Has High-Priority Backlog section", "passed": true, "evidence": "Section header found"}, {"text": "Focuses on API tier with specific citations", "passed": true, "evidence": "Found 5 file path citations"}, {"text": "Mentions production/operational concerns", "passed": true, "evidence": "Found 7 matches"}, {"text": "Report is substantive (200-4000 words)", "passed": true, "evidence": "1235 words (acceptable range: 200-4000)"}], "notes": []}, {"eval_id": 2, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 30.0, "tokens": 0, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "Has Executive Summary section", "passed": true, "evidence": "Section header found"}, {"text": "Has Architectural Breakdown section", "passed": true, "evidence": "Section header found"}, {"text": "Has High-Priority Backlog section", "passed": true, "evidence": "Section header found"}, {"text": "Identifies and names the biggest risk", "passed": true, "evidence": "Found 1 matches"}, {"text": "No generic praise phrases", "passed": true, "evidence": "Unwanted phrase not found"}], "notes": []}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 30.0, "stddev": 0.0, "min": 30.0, "max": 30.0}, "tokens": {"mean": 0.0, "stddev": 0.0, "min": 0, "max": 0}}, "without_skill": {"pass_rate": {"mean": 0.0, "stddev": 0.0, "min": 0.0, "max": 0.0}, "time_seconds": {"mean": 0.0, "stddev": 0.0, "min": 0.0, "max": 0.0}, "tokens": {"mean": 0, "stddev": 0, "min": 0, "max": 0}}, "delta": {"pass_rate": "+1.00", "time_seconds": "+30.0", "tokens": "+0"}}, "notes": []}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

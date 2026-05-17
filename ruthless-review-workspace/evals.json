@@ -1,0 +1,48 @@
+{
+  "skill_name": "ruthless-review",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Give me a ruthless review of this entire codebase. Don't hold back.",
+      "expected_output": "A structured report with Executive Summary, Architectural Breakdown citing specific files, and High-Priority Backlog table. No generic praise.",
+      "files": [],
+      "assertions": [
+        {"name": "Has Executive Summary section", "check": "section_exists", "pattern": "Executive Summary"},
+        {"name": "Has Architectural Breakdown section", "check": "section_exists", "pattern": "Architectural Breakdown"},
+        {"name": "Has High-Priority Backlog section", "check": "section_exists", "pattern": "High-Priority Backlog"},
+        {"name": "Backlog is a Markdown table with correct columns", "check": "table_exists", "pattern": "\\|.*Impact.*Complexity.*Justification"},
+        {"name": "Cites specific file paths from the project", "check": "file_paths_exist", "pattern": "src/LectioDivina\\.[A-Za-z]+/", "min_matches": 3},
+        {"name": "No generic praise phrases", "check": "phrase_absent", "pattern": "(good job|well done|this is excellent|great work|looks great)"},
+        {"name": "No banned AI vocabulary", "check": "phrase_absent", "pattern": "\\b(delve|robust|comprehensive|nuanced|fundamental)\\b"},
+        {"name": "Report is substantive", "check": "word_count_range", "min": 300, "max": 5000}
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Audit just the API tier. I want to know what will break in production.",
+      "expected_output": "A scoped review focused on the backend API tier with specific file citations from the API project.",
+      "files": [],
+      "assertions": [
+        {"name": "Has Executive Summary section", "check": "section_exists", "pattern": "Executive Summary"},
+        {"name": "Has Architectural Breakdown section", "check": "section_exists", "pattern": "Architectural Breakdown"},
+        {"name": "Has High-Priority Backlog section", "check": "section_exists", "pattern": "High-Priority Backlog"},
+        {"name": "Focuses on API tier with specific citations", "check": "file_paths_exist", "pattern": "src/LectioDivina\\.(Api|Data|Services|Core)/", "min_matches": 3},
+        {"name": "Mentions production/operational concerns", "check": "phrase_present", "pattern": "(production|outage|incident|failure|transient)"},
+        {"name": "Report is substantive", "check": "word_count_range", "min": 200, "max": 4000}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "System health check — what's the biggest risk in this architecture?",
+      "expected_output": "A report that identifies the biggest architectural risk, following the ruthless review format without needing the exact phrase 'ruthless review'.",
+      "files": [],
+      "assertions": [
+        {"name": "Has Executive Summary section", "check": "section_exists", "pattern": "Executive Summary"},
+        {"name": "Has Architectural Breakdown section", "check": "section_exists", "pattern": "Architectural Breakdown"},
+        {"name": "Has High-Priority Backlog section", "check": "section_exists", "pattern": "High-Priority Backlog"},
+        {"name": "Identifies and names the biggest risk", "check": "phrase_present", "pattern": "(biggest risk|single biggest|primary risk|most significant)"},
+        {"name": "No generic praise phrases", "check": "phrase_absent", "pattern": "(good job|well done|this is excellent|great work|looks great)"}
+      ]
+    }
+  ]
+}

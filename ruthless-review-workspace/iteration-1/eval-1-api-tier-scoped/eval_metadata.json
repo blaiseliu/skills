@@ -1,0 +1,6 @@
+{
+  "eval_id": 1,
+  "eval_name": "api-tier-scoped-audit",
+  "prompt": "Audit just the API tier. I want to know what will break in production.",
+  "assertions": []
+}

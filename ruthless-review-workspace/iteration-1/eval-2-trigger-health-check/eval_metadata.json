@@ -1,0 +1,6 @@
+{
+  "eval_id": 2,
+  "eval_name": "trigger-health-check",
+  "prompt": "System health check — what's the biggest risk in this architecture?",
+  "assertions": []
+}

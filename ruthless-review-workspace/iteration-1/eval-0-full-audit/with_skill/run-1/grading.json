@@ -1,0 +1,53 @@
+{
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 8,
+    "failed": 0,
+    "total": 8
+  },
+  "expectations": [
+    {
+      "text": "Has Executive Summary section",
+      "passed": true,
+      "evidence": "Section header found"
+    },
+    {
+      "text": "Has Architectural Breakdown section",
+      "passed": true,
+      "evidence": "Section header found"
+    },
+    {
+      "text": "Has High-Priority Backlog section",
+      "passed": true,
+      "evidence": "Section header found"
+    },
+    {
+      "text": "Backlog is a Markdown table with correct columns",
+      "passed": true,
+      "evidence": "Backlog table with correct columns found"
+    },
+    {
+      "text": "Cites specific file paths from the project",
+      "passed": true,
+      "evidence": "Found 8 file path citations"
+    },
+    {
+      "text": "No generic praise phrases",
+      "passed": true,
+      "evidence": "Unwanted phrase not found"
+    },
+    {
+      "text": "No banned AI vocabulary",
+      "passed": true,
+      "evidence": "Unwanted phrase not found"
+    },
+    {
+      "text": "Report is substantive (300-5000 words)",
+      "passed": true,
+      "evidence": "1580 words (acceptable range: 300-5000)"
+    }
+  ],
+  "timing": {
+    "total_duration_seconds": 30.0
+  }
+}
